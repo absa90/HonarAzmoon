@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>هنرآزمون</title>
+  <style>
+    body {
+      font-family: Tahoma;
+      background: #f2f6ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1e3a8a;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 15px;
+      background: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #15803d;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2>هنرآزمون</h2>
+  <p>سامانه آزمون‌سازی مهارتی</p>
+</header>
+
+<div class="container">
+
+  <div class="box">
+    <h3>انتخاب فایل آزمون</h3>
+    <input type="file" id="fileInput" accept=".xlsx">
+    <br><br>
+    <button onclick="loadFile()">شروع آزمون</button>
+  </div>
+
+  <div class="box" id="examBox" style="display:none;">
+    <h3>سوال نمونه</h3>
+    <p id="question">در حال بارگذاری...</p>
+
+    <button onclick="nextQuestion()">بعدی</button>
+  </div>
+
+</div>
+
+<script>
+  let questions = [];
+  let current = 0;
+
+  function loadFile() {
+    alert("فعلاً فقط اسکلت UI فعال است. در مرحله بعد Excel را وصل می‌کنیم.");
+    document.getElementById("examBox").style.display = "block";
+
+    // نمونه تستی
+    questions = [
+      { q: "ولتاژ چیست؟", a: "اختلاف پتانسیل" },
+      { q: "جریان چیست؟", a: "حرکت الکترون" }
+    ];
+
+    showQuestion();
+  }
+
+  function showQuestion() {
+    document.getElementById("question").innerText =
+      questions[current].q;
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current < questions.length) {
+      showQuestion();
+    } else {
+      alert("آزمون تمام شد (نسخه تستی)");
+    }
+  }
+</script>
+
+</body>
+</html>
