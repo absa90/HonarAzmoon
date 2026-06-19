@@ -2,297 +2,307 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>هنرآزمون</title>
+<title>هنرآزمون V1.0</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
 font-family:tahoma;
 background:#f2f6ff;
 margin:0;
-padding:0;
+padding:20px;
 }
-
-header{
-background:#1e3a8a;
-color:white;
-padding:10px 15px;
-display:flex;
-align-items:center;
-gap:15px;
-}
-
-header img{
-height:50px;
-background:white;
-border-radius:6px;
-padding:3px;
-}
-
-.header-text h3{
-margin:0;
-}
-
-.header-text small{
-font-size:12px;
-opacity:0.9;
-}
-
-.container{padding:20px}
 
 .box{
-background:white;
+background:#fff;
 padding:20px;
 border-radius:10px;
-margin-top:15px;
+margin-bottom:15px;
 }
 
 input{
 width:100%;
-padding:10px;
+padding:8px;
 margin:6px 0;
-border:1px solid #ccc;
-border-radius:6px;
 }
 
 button{
-padding:10px 15px;
-background:#16a34a;
-color:white;
-border:none;
-border-radius:6px;
-cursor:pointer;
+padding:8px 12px;
 margin:5px;
+cursor:pointer;
 }
 
 .option{
-padding:12px;
-margin:10px 0;
-background:#f1f5f9;
+padding:10px;
+border:1px solid #ccc;
 border-radius:8px;
+margin:8px 0;
 cursor:pointer;
-border:2px solid transparent;
+display:flex;
+align-items:center;
+gap:10px;
 }
 
 .option.selected{
-background:#bfdbfe;
-border:2px solid #2563eb;
+background:#dbeafe;
+border-color:#2563eb;
 }
 
-#timer{
-font-weight:bold;
-color:#b91c1c;
-font-size:18px;
-margin-bottom:10px;
+#nav{
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+margin-top:15px;
 }
+
+.navbtn{
+padding:5px 10px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.current{background:#2563eb;color:white;}
+.answered{background:#16a34a;color:white;}
+.unanswered{background:#e5e7eb;}
 </style>
 </head>
 
 <body>
 
-<header>
-<img src="https://s6.uupload.ir/files/1781891168486_wwcp.png">
-
-<div class="header-text">
-<h3>هنرآزمون</h3>
-<small>سامانه آزمون مهارتی هنرستان تلاش مبارکه</small>
-</div>
-</header>
-
-<div class="container">
-
-<!-- فرم -->
 <div class="box" id="formBox">
-<h3>اطلاعات دانش‌آموز</h3>
+<h2>هنرآزمون</h2>
 
-<input id="name" placeholder="نام و نام خانوادگی *">
-<input id="father" placeholder="نام پدر">
-<input id="nid" placeholder="کد ملی">
-<input id="grade" placeholder="پایه">
-<input id="field" placeholder="رشته">
+<label>نام و نام خانوادگی *</label>
+<input id="name">
+
+<label>نام پدر</label>
+<input id="father">
+
+<label>کد ملی</label>
+<input id="nid">
 
 <button onclick="startExam()">ادامه</button>
 </div>
 
-<!-- فایل -->
 <div class="box" id="fileBox" style="display:none">
-<h3>انتخاب فایل آزمون</h3>
+<h3>انتخاب فایل اکسل آزمون</h3>
 <input type="file" id="fileInput" accept=".xlsx">
 <button onclick="loadExam()">شروع آزمون</button>
 </div>
 
-<!-- آزمون -->
 <div class="box" id="examBox" style="display:none">
 
 <div id="timer">--</div>
-
 <h3 id="title"></h3>
+
 <div id="qbox"></div>
+<div id="nav"></div>
 
 <button onclick="prev()">قبلی</button>
 <button onclick="next()">بعدی</button>
-<button onclick="finish()">پایان</button>
+<button onclick="finish()">پایان آزمون</button>
 
 </div>
 
-<!-- نتیجه -->
 <div class="box" id="resultBox" style="display:none"></div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
 
 let q=[],a=[],i=0,time=0,timer;
+let info={};
 
-/* شروع */
 function startExam(){
-
-let nameVal=document.getElementById("name").value;
-
-if(!nameVal){
+if(!document.getElementById("name").value.trim()){
 alert("نام الزامی است");
 return;
 }
-
-document.getElementById("formBox").style.display="none";
-document.getElementById("fileBox").style.display="block";
+formBox.style.display="none";
+fileBox.style.display="block";
 }
 
-/* load */
 function loadExam(){
-
-let f=document.getElementById("fileInput").files[0];
+let f=fileInput.files[0];
 if(!f)return;
 
 let r=new FileReader();
-
 r.onload=function(e){
 
-let data=new Uint8Array(e.target.result);
-let wb=XLSX.read(data,{type:"array"});
+let wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
 let sh=wb.Sheets[wb.SheetNames[0]];
-let j=XLSX.utils.sheet_to_json(sh,{header:1});
+let d=XLSX.utils.sheet_to_json(sh,{header:1});
 
-parse(j);
+parse(d);
 };
 
 r.readAsArrayBuffer(f);
 }
 
-/* parse */
 function parse(d){
 
-q=[];
-let examTime=30;
+let h=d[0];
 
-d.forEach(r=>{
-if(!r || !r[0] || r.length<8)return;
+info={
+exam:h[7],
+field:h[8],
+grade:h[9],
+date:h[10],
+time:h[11]
+};
+
+if(!info.time){
+alert("مدت زمان آزمون مشخص نشده");
+return;
+}
+
+q=[];
+
+for(let r of d){
+if(!r || !r[0]) continue;
 
 q.push({
-q:r[2],
-A:r[3],
-B:r[4],
-C:r[5],
-D:r[6],
-correct:r[7]
+q:r[1],
+A:r[2],
+B:r[3],
+C:r[4],
+D:r[5],
+correct:String(r[6]).trim()
 });
+}
 
-if(r[8]) examTime=r[8];
-});
-
-time=examTime*60;
-startTimer();
-
-i=0;
-a=[];
+time=info.time*60;
 
 fileBox.style.display="none";
 examBox.style.display="block";
 
+startTimer();
 show();
 }
 
-/* timer */
 function startTimer(){
-
 timer=setInterval(()=>{
-
 let m=Math.floor(time/60);
 let s=time%60;
 
-timerDiv.innerText=`زمان: ${m}:${s<10?"0":""}${s}`;
+document.getElementById("timer").innerText=
+"زمان: "+m+":"+String(s).padStart(2,'0');
 
 time--;
 
-if(time<0)finish();
+if(time<0) finish(true);
 
 },1000);
 }
 
-/* show */
 function show(){
 
 let x=q[i];
 
-title.innerText=`سوال ${i+1} از ${q.length}`;
+title.innerText="سوال "+(i+1)+" از "+q.length;
 
 qbox.innerHTML=`
-<p><b>${x.q}</b></p>
+<div><b>${x.q}</b></div>
 
-<div class="option" onclick="sel('A')">${x.A}</div>
-<div class="option" onclick="sel('B')">${x.B}</div>
-<div class="option" onclick="sel('C')">${x.C}</div>
-<div class="option" onclick="sel('D')">${x.D}</div>
+<div class="option ${a[i]=='A'?'selected':''}" onclick="sel('A')"><input type="radio" ${a[i]=='A'?'checked':''}> ${x.A}</div>
+<div class="option ${a[i]=='B'?'selected':''}" onclick="sel('B')"><input type="radio" ${a[i]=='B'?'checked':''}> ${x.B}</div>
+<div class="option ${a[i]=='C'?'selected':''}" onclick="sel('C')"><input type="radio" ${a[i]=='C'?'checked':''}> ${x.C}</div>
+<div class="option ${a[i]=='D'?'selected':''}" onclick="sel('D')"><input type="radio" ${a[i]=='D'?'checked':''}> ${x.D}</div>
 `;
 
-update();
+drawNav();
 }
 
-function sel(v){a[i]=v;update();}
+function drawNav(){
+let h="";
+for(let k=0;k<q.length;k++){
+let c="unanswered";
+if(a[k]) c="answered";
+if(k==i) c="current";
 
-function update(){
-
-document.querySelectorAll(".option").forEach(e=>{
-e.classList.remove("selected");
-});
-
-if(a[i]){
-document.querySelectorAll(".option")[{"A":0,"B":1,"C":2,"D":3}[a[i]]]
-.classList.add("selected");
+h+=`<button class="navbtn ${c}" onclick="go(${k})">${k+1}</button>`;
 }
+nav.innerHTML=h;
 }
 
-function next(){if(i<q.length-1){i++;show()}}
-function prev(){if(i>0){i--;show()}}
+function go(n){i=n;show();}
+function sel(v){a[i]=v;show();}
+function next(){if(i<q.length-1){i++;show();}}
+function prev(){if(i>0){i--;show();}}
 
-/* finish */
-function finish(){
+function finish(auto=false){
+
+let miss=[];
+for(let k=0;k<q.length;k++){
+if(!a[k]) miss.push(k+1);
+}
+
+if(!auto && miss.length){
+if(!confirm("سوالات بدون پاسخ: "+miss.join(",")+" آیا پایان؟")) return;
+}
 
 clearInterval(timer);
 
-let c=0;
+let rows="";
+let correct=0;
 
 for(let k=0;k<q.length;k++){
-if(a[k]==q[k].correct)c++;
+let ok=a[k]==q[k].correct;
+if(ok) correct++;
+
+rows+=`
+<tr>
+<td>${k+1}</td>
+<td>${a[k]||""}</td>
+<td>${q[k].correct}</td>
+<td>${ok?"✓":"✗"}</td>
+</tr>`;
 }
 
-document.getElementById("examBox").style.display="none";
-document.getElementById("resultBox").style.display="block";
+let wrong=q.length-correct;
+let score100=(correct/q.length*100).toFixed(2);
+let score20=(correct/q.length*20).toFixed(2);
 
-/* بدون نمره (طبق خواسته تو) */
-resultBox.innerHTML=`
-<h2>آزمون ثبت شد</h2>
-<p>نام: ${document.getElementById("name").value}</p>
-<p>پاسخ‌ها ذخیره شد.</p>
-<p>برای چاپ از دکمه Print استفاده کنید.</p>
+let resHTML=`
+<html dir="rtl"><meta charset="utf-8">
+<h2>پاسخنامه آزمون</h2>
 
-<button onclick="window.print()">چاپ PDF</button>
+<p>آزمون: ${info.exam}</p>
+<p>رشته: ${info.field}</p>
+<p>پایه: ${info.grade}</p>
+<p>تاریخ: ${info.date}</p>
+
+<hr>
+
+<p>نام: ${name.value}</p>
+<p>نام پدر: ${father.value}</p>
+<p>کد ملی: ${nid.value}</p>
+
+<table border="1" cellpadding="5">
+<tr><th>سوال</th><th>پاسخ</th><th>صحیح</th><th>نتیجه</th></tr>
+${rows}
+</table>
+
+<p>صحیح: ${correct}</p>
+<p>غلط: ${wrong}</p>
+<p>نمره 100: ${score100}</p>
+<p>نمره 20: ${score20}</p>
+</html>
 `;
 
+let blob=new Blob([resHTML],{type:'text/html'});
+let aLink=document.createElement("a");
+aLink.href=URL.createObjectURL(blob);
+aLink.download="Result_"+name.value+".html";
+aLink.click();
+
+examBox.style.display="none";
+resultBox.style.display="block";
+
+resultBox.innerHTML="<h2>آزمون با موفقیت ثبت شد</h2><p>فایل پاسخنامه دانلود شد</p>";
 }
 
 </script>
 
 </body>
-  </html>
+</html>
