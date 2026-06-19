@@ -44,7 +44,6 @@
       background: #15803d;
     }
 
-    /* گزینه‌ها */
     .option {
       display: flex;
       align-items: center;
@@ -65,7 +64,6 @@
       border: 2px solid #2563eb;
     }
 
-    /* دایره انتخاب */
     .radio {
       width: 20px;
       height: 20px;
@@ -75,7 +73,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
     }
 
     .radio.checked::after {
@@ -84,6 +81,14 @@
       height: 10px;
       background: #2563eb;
       border-radius: 50%;
+    }
+
+    .result {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      text-align: center;
     }
   </style>
 </head>
@@ -112,11 +117,13 @@
 
     <button onclick="prevQuestion()">قبلی</button>
     <button onclick="nextQuestion()">بعدی</button>
+    <button onclick="finishExam()">پایان آزمون</button>
   </div>
+
+  <div class="result" id="resultBox" style="display:none;"></div>
 
 </div>
 
-<!-- کتابخانه Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
@@ -125,11 +132,10 @@
   let answers = [];
 
   function loadFile() {
-    const input = document.getElementById('fileInput');
-    const file = input.files[0];
+    const file = document.getElementById('fileInput').files[0];
 
     if (!file) {
-      alert("لطفاً فایل Excel را انتخاب کنید");
+      alert("فایل انتخاب نشده");
       return;
     }
 
@@ -139,9 +145,7 @@
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
 
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
       parseQuestions(json);
@@ -154,25 +158,17 @@
     questions = [];
 
     for (let i = 1; i < data.length; i++) {
-      let row = data[i];
-
-      if (!row || !row[0]) continue;
+      let r = data[i];
+      if (!r || !r[0]) continue;
 
       questions.push({
-        id: row[0],
-        skill: row[1],
-        q: row[2],
-        A: row[3],
-        B: row[4],
-        C: row[5],
-        D: row[6],
-        correct: row[7]
+        q: r[2],
+        A: r[3],
+        B: r[4],
+        C: r[5],
+        D: r[6],
+        correct: r[7]
       });
-    }
-
-    if (questions.length === 0) {
-      alert("سوالی پیدا نشد");
-      return;
     }
 
     current = 0;
@@ -186,54 +182,46 @@
     let q = questions[current];
 
     document.getElementById("qTitle").innerText =
-      "سوال " + (current + 1) + " از " + questions.length;
+      `سوال ${current + 1} از ${questions.length}`;
 
     document.getElementById("question").innerHTML = `
       <p><b>${q.q}</b></p>
 
       <div class="option" id="optA" onclick="selectAnswer('A')">
-        <div class="radio" id="radioA"></div>
-        ${q.A}
+        <div class="radio" id="radioA"></div>${q.A}
       </div>
 
       <div class="option" id="optB" onclick="selectAnswer('B')">
-        <div class="radio" id="radioB"></div>
-        ${q.B}
+        <div class="radio" id="radioB"></div>${q.B}
       </div>
 
       <div class="option" id="optC" onclick="selectAnswer('C')">
-        <div class="radio" id="radioC"></div>
-        ${q.C}
+        <div class="radio" id="radioC"></div>${q.C}
       </div>
 
       <div class="option" id="optD" onclick="selectAnswer('D')">
-        <div class="radio" id="radioD"></div>
-        ${q.D}
+        <div class="radio" id="radioD"></div>${q.D}
       </div>
     `;
 
     updateUI();
   }
 
-  function selectAnswer(ans) {
-    answers[current] = ans;
+  function selectAnswer(a) {
+    answers[current] = a;
     updateUI();
   }
 
   function updateUI() {
-    ["A","B","C","D"].forEach(opt => {
-      const box = document.getElementById("opt"+opt);
-      const radio = document.getElementById("radio"+opt);
-
-      if (box) box.classList.remove("selected");
-      if (radio) radio.classList.remove("checked");
+    ["A","B","C","D"].forEach(o => {
+      document.getElementById("opt"+o)?.classList.remove("selected");
+      document.getElementById("radio"+o)?.classList.remove("checked");
     });
 
-    let selected = answers[current];
-
-    if (selected) {
-      document.getElementById("opt"+selected).classList.add("selected");
-      document.getElementById("radio"+selected).classList.add("checked");
+    let s = answers[current];
+    if (s) {
+      document.getElementById("opt"+s).classList.add("selected");
+      document.getElementById("radio"+s).classList.add("checked");
     }
   }
 
@@ -241,8 +229,6 @@
     if (current < questions.length - 1) {
       current++;
       showQuestion();
-    } else {
-      alert("آزمون تمام شد (نسخه اولیه)");
     }
   }
 
@@ -251,6 +237,30 @@
       current--;
       showQuestion();
     }
+  }
+
+  function finishExam() {
+    let correct = 0;
+
+    for (let i = 0; i < questions.length; i++) {
+      if (answers[i] === questions[i].correct) {
+        correct++;
+      }
+    }
+
+    let score100 = (correct / questions.length) * 100;
+    let score20 = (correct / questions.length) * 20;
+
+    document.getElementById("examBox").style.display = "none";
+    document.getElementById("resultBox").style.display = "block";
+
+    document.getElementById("resultBox").innerHTML = `
+      <h2>نتیجه آزمون</h2>
+      <p>تعداد درست: ${correct}</p>
+      <p>تعداد کل: ${questions.length}</p>
+      <p>نمره از 100: ${score100.toFixed(2)}</p>
+      <p>نمره از 20: ${score20.toFixed(2)}</p>
+    `;
   }
 </script>
 
