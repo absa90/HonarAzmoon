@@ -6,9 +6,33 @@
 
 <style>
 body{font-family:tahoma;background:#f2f6ff;margin:0;padding:0}
-header{background:#1e3a8a;color:white;padding:12px;text-align:center}
+
+header{
+background:#1e3a8a;
+color:white;
+padding:10px;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:10px;
+}
+
+header img{height:45px;border-radius:6px}
+
 .container{padding:20px}
-.box{background:white;padding:20px;border-radius:10px;margin-top:15px}
+
+.box{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-top:15px;
+}
+
+input,select{
+width:100%;
+padding:8px;
+margin:5px 0;
+}
 
 button{
 padding:10px 15px;
@@ -20,26 +44,32 @@ margin:5px;
 cursor:pointer;
 }
 
+/* سوال */
 .option{
 padding:12px;
 margin:10px 0;
 background:#f1f5f9;
 border-radius:10px;
 cursor:pointer;
-transition:0.2s;
+border:2px solid transparent;
 }
 
-.option:hover{background:#e2e8f0}
 .option.selected{
 background:#bfdbfe;
 border:2px solid #2563eb;
 }
 
+/* تایمر */
 #timer{
 font-size:18px;
 font-weight:bold;
 color:#b91c1c;
-margin-bottom:10px;
+margin:10px 0;
+}
+
+/* چاپ */
+@media print{
+button{display:none}
 }
 </style>
 </head>
@@ -47,31 +77,49 @@ margin-bottom:10px;
 <body>
 
 <header>
-<h2>هنرآزمون</h2>
-<p>سامانه آزمون مهارتی</p>
+<img src="https://s6.uupload.ir/files/1781891168486_wwcp.png">
+<div>
+<h3>هنرآزمون</h3>
+<small>سامانه آزمون مهارتی هنرستان تلاش مبارکه</small>
+</div>
 </header>
 
 <div class="container">
 
-<div class="box">
-<h3>انتخاب فایل آزمون</h3>
-<input type="file" id="fileInput" accept=".xlsx">
-<button onclick="load()">شروع آزمون</button>
+<!-- فرم دانش آموز -->
+<div class="box" id="studentBox">
+<h3>اطلاعات دانش‌آموز</h3>
+
+<input id="name" placeholder="نام و نام خانوادگی">
+<input id="father" placeholder="نام پدر">
+<input id="nid" placeholder="کد ملی">
+<input id="grade" placeholder="پایه">
+<input id="field" placeholder="رشته">
+
+<button onclick="startExam()">شروع آزمون</button>
 </div>
 
+<!-- انتخاب فایل -->
+<div class="box" id="fileBox" style="display:none">
+<h3>فایل آزمون</h3>
+<input type="file" id="fileInput" accept=".xlsx">
+<button onclick="load()">بارگذاری سوالات</button>
+</div>
+
+<!-- آزمون -->
 <div class="box" id="exam" style="display:none">
 
 <div id="timer">--</div>
-
-<h3 id="qtitle"></h3>
+<h3 id="title"></h3>
 <div id="qbox"></div>
 
 <button onclick="prev()">قبلی</button>
 <button onclick="next()">بعدی</button>
-<button onclick="finish()">پایان</button>
+<button onclick="finish()">پایان آزمون</button>
 
 </div>
 
+<!-- نتیجه -->
 <div class="box" id="result" style="display:none"></div>
 
 </div>
@@ -80,15 +128,25 @@ margin-bottom:10px;
 
 <script>
 
-let q=[];
-let a=[];
-let i=0;
-let time=0;
-let timer;
+let q=[],a=[],i=0,time=0,timer;
 
+/* شروع آزمون */
+function startExam(){
+
+if(!name.value || !nid.value){
+alert("اطلاعات کامل نیست");
+return;
+}
+
+document.getElementById("studentBox").style.display="none";
+document.getElementById("fileBox").style.display="block";
+}
+
+/* بارگذاری فایل */
 function load(){
-let f=document.getElementById("fileInput").files[0];
-if(!f){alert("فایل نیست");return}
+
+let f=fileInput.files[0];
+if(!f){alert("فایل نیست");return;}
 
 let r=new FileReader();
 
@@ -99,23 +157,22 @@ let sh=wb.Sheets[wb.SheetNames[0]];
 let j=XLSX.utils.sheet_to_json(sh,{header:1});
 
 parse(j);
-}
+};
 
 r.readAsArrayBuffer(f);
 }
 
+/* پردازش */
 function parse(d){
 
 q=[];
 let examTime=30;
 
 d.forEach(r=>{
-if(!r||!r[0]||r.length<8)return;
-
-if(r[2]==="") return;
+if(!r||r.length<8||!r[0])return;
 
 q.push({
-question:r[2],
+q:r[2],
 A:r[3],
 B:r[4],
 C:r[5],
@@ -127,42 +184,40 @@ if(r[8]) examTime=r[8];
 });
 
 time=examTime*60;
-
 startTimer();
 
 i=0;
 a=[];
 
+document.getElementById("fileBox").style.display="none";
 document.getElementById("exam").style.display="block";
+
 show();
 }
 
+/* تایمر */
 function startTimer(){
 timer=setInterval(()=>{
 let m=Math.floor(time/60);
 let s=time%60;
 
-document.getElementById("timer")
-.innerText=`زمان: ${m}:${s<10?"0":""}${s}`;
+timerDiv.innerText=`زمان: ${m}:${s<10?"0":""}${s}`;
 
 time--;
+if(time<0)finish();
 
-if(time<0){
-clearInterval(timer);
-finish();
-}
 },1000);
 }
 
+/* نمایش سوال */
 function show(){
 
 let x=q[i];
 
-document.getElementById("qtitle")
-.innerText=`سوال ${i+1} از ${q.length}`;
+title.innerText=`سوال ${i+1} از ${q.length}`;
 
-document.getElementById("qbox").innerHTML=`
-<p><b>${x.question}</b></p>
+qbox.innerHTML=`
+<p><b>${x.q}</b></p>
 
 <div class="option" onclick="sel('A')">${x.A}</div>
 <div class="option" onclick="sel('B')">${x.B}</div>
@@ -173,12 +228,15 @@ document.getElementById("qbox").innerHTML=`
 update();
 }
 
+/* انتخاب */
 function sel(v){
 a[i]=v;
 update();
 }
 
+/* UI */
 function update(){
+
 document.querySelectorAll(".option").forEach(e=>{
 e.classList.remove("selected");
 });
@@ -189,12 +247,16 @@ document.querySelectorAll(".option")[{"A":0,"B":1,"C":2,"D":3}[a[i]]]
 }
 }
 
+/* ناوبری */
 function next(){if(i<q.length-1){i++;show()}}
 function prev(){if(i>0){i--;show()}}
 
+/* پایان + چاپ */
 function finish(){
 
 clearInterval(timer);
+
+if(!confirm("آیا مطمئن هستید؟"))return;
 
 let c=0;
 
@@ -205,15 +267,46 @@ if(a[k]==q[k].correct)c++;
 let p100=(c/q.length)*100;
 let p20=(c/q.length)*20;
 
-document.getElementById("exam").style.display="none";
-document.getElementById("result").style.display="block";
+/* ذخیره فایل نتیجه */
+let result={
+student:{
+name:name.value,
+father:father.value,
+nid:nid.value,
+grade:grade.value,
+field:field.value
+},
+score:{
+correct:c,
+total:q.length,
+p100:p100,
+p20:p20
+}
+};
 
-document.getElementById("result").innerHTML=`
-<h2>نتیجه</h2>
+let blob=new Blob([JSON.stringify(result,null,2)],{type:"application/json"});
+let url=URL.createObjectURL(blob);
+
+let aTag=document.createElement("a");
+aTag.href=url;
+aTag.download="result.json";
+aTag.click();
+
+/* نمایش نتیجه */
+exam.style.display="none";
+resultBox.style.display="block";
+
+resultBox.innerHTML=`
+<h2>نتیجه آزمون</h2>
+
+<p>نام: ${name.value}</p>
 <p>درست: ${c}</p>
 <p>نمره 100: ${p100.toFixed(1)}</p>
 <p>نمره 20: ${p20.toFixed(1)}</p>
+
+<button onclick="window.print()">چاپ نتیجه</button>
 `;
+
 }
 
 </script>
