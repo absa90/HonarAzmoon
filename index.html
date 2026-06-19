@@ -5,28 +5,53 @@
 <title>هنرآزمون</title>
 
 <style>
-body{font-family:tahoma;background:#f2f6ff;margin:0;padding:0}
-
-header{
-background:#1e3a8a;color:white;
-padding:10px;
-display:flex;
-justify-content:center;
-gap:10px;
-align-items:center;
+body{
+font-family:tahoma;
+background:#f2f6ff;
+margin:0;
+padding:0;
 }
 
-header img{height:45px}
+header{
+background:#1e3a8a;
+color:white;
+padding:10px 15px;
+display:flex;
+align-items:center;
+gap:15px;
+}
+
+header img{
+height:50px;
+background:white;
+border-radius:6px;
+padding:3px;
+}
+
+.header-text h3{
+margin:0;
+}
+
+.header-text small{
+font-size:12px;
+opacity:0.9;
+}
 
 .container{padding:20px}
-.box{background:white;padding:20px;border-radius:10px;margin-top:15px}
+
+.box{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-top:15px;
+}
 
 input{
 width:100%;
 padding:10px;
-margin:5px 0;
+margin:6px 0;
 border:1px solid #ccc;
-border-radius:5px;
+border-radius:6px;
 }
 
 button{
@@ -34,16 +59,16 @@ padding:10px 15px;
 background:#16a34a;
 color:white;
 border:none;
-border-radius:5px;
-margin:5px;
+border-radius:6px;
 cursor:pointer;
+margin:5px;
 }
 
 .option{
 padding:12px;
 margin:10px 0;
 background:#f1f5f9;
-border-radius:10px;
+border-radius:8px;
 cursor:pointer;
 border:2px solid transparent;
 }
@@ -53,7 +78,12 @@ background:#bfdbfe;
 border:2px solid #2563eb;
 }
 
-#timer{color:#b91c1c;font-weight:bold;font-size:18px}
+#timer{
+font-weight:bold;
+color:#b91c1c;
+font-size:18px;
+margin-bottom:10px;
+}
 </style>
 </head>
 
@@ -61,9 +91,10 @@ border:2px solid #2563eb;
 
 <header>
 <img src="https://s6.uupload.ir/files/1781891168486_wwcp.png">
-<div>
+
+<div class="header-text">
 <h3>هنرآزمون</h3>
-<small>سیستم آزمون مهارتی</small>
+<small>سامانه آزمون مهارتی هنرستان تلاش مبارکه</small>
 </div>
 </header>
 
@@ -79,26 +110,27 @@ border:2px solid #2563eb;
 <input id="grade" placeholder="پایه">
 <input id="field" placeholder="رشته">
 
-<button onclick="start()">ادامه</button>
+<button onclick="startExam()">ادامه</button>
 </div>
 
 <!-- فایل -->
 <div class="box" id="fileBox" style="display:none">
-<h3>فایل آزمون</h3>
+<h3>انتخاب فایل آزمون</h3>
 <input type="file" id="fileInput" accept=".xlsx">
-<button onclick="load()">شروع آزمون</button>
+<button onclick="loadExam()">شروع آزمون</button>
 </div>
 
 <!-- آزمون -->
 <div class="box" id="examBox" style="display:none">
 
 <div id="timer">--</div>
+
 <h3 id="title"></h3>
 <div id="qbox"></div>
 
 <button onclick="prev()">قبلی</button>
 <button onclick="next()">بعدی</button>
-<button onclick="finish()">پایان آزمون</button>
+<button onclick="finish()">پایان</button>
 
 </div>
 
@@ -113,18 +145,13 @@ border:2px solid #2563eb;
 
 let q=[],a=[],i=0,time=0,timer;
 
-/* جلوگیری از تکرار */
-function start(){
+/* شروع */
+function startExam(){
 
-if(!name.value){
-alert("نام اجباری است");
-return;
-}
+let nameVal=document.getElementById("name").value;
 
-let users=JSON.parse(localStorage.getItem("users")||"{}");
-
-if(users[name.value]){
-alert("شما قبلاً در آزمون شرکت کرده‌اید");
+if(!nameVal){
+alert("نام الزامی است");
 return;
 }
 
@@ -133,20 +160,22 @@ document.getElementById("fileBox").style.display="block";
 }
 
 /* load */
-function load(){
+function loadExam(){
 
-let f=fileInput.files[0];
+let f=document.getElementById("fileInput").files[0];
 if(!f)return;
 
 let r=new FileReader();
 
 r.onload=function(e){
+
 let data=new Uint8Array(e.target.result);
 let wb=XLSX.read(data,{type:"array"});
 let sh=wb.Sheets[wb.SheetNames[0]];
 let j=XLSX.utils.sheet_to_json(sh,{header:1});
+
 parse(j);
-}
+};
 
 r.readAsArrayBuffer(f);
 }
@@ -158,13 +187,18 @@ q=[];
 let examTime=30;
 
 d.forEach(r=>{
-if(!r||!r[0]||r.length<8)return;
+if(!r || !r[0] || r.length<8)return;
 
 q.push({
-q:r[2],A:r[3],B:r[4],C:r[5],D:r[6],correct:r[7]
+q:r[2],
+A:r[3],
+B:r[4],
+C:r[5],
+D:r[6],
+correct:r[7]
 });
 
-if(r[8])examTime=r[8];
+if(r[8]) examTime=r[8];
 });
 
 time=examTime*60;
@@ -181,6 +215,7 @@ show();
 
 /* timer */
 function startTimer(){
+
 timer=setInterval(()=>{
 
 let m=Math.floor(time/60);
@@ -205,10 +240,10 @@ title.innerText=`سوال ${i+1} از ${q.length}`;
 qbox.innerHTML=`
 <p><b>${x.q}</b></p>
 
-<div class="option" onclick="sel('A')" id="A">${x.A}</div>
-<div class="option" onclick="sel('B')" id="B">${x.B}</div>
-<div class="option" onclick="sel('C')" id="C">${x.C}</div>
-<div class="option" onclick="sel('D')" id="D">${x.D}</div>
+<div class="option" onclick="sel('A')">${x.A}</div>
+<div class="option" onclick="sel('B')">${x.B}</div>
+<div class="option" onclick="sel('C')">${x.C}</div>
+<div class="option" onclick="sel('D')">${x.D}</div>
 `;
 
 update();
@@ -218,12 +253,13 @@ function sel(v){a[i]=v;update();}
 
 function update(){
 
-["A","B","C","D"].forEach(x=>{
-document.getElementById(x)?.classList.remove("selected");
+document.querySelectorAll(".option").forEach(e=>{
+e.classList.remove("selected");
 });
 
 if(a[i]){
-document.getElementById(a[i]).classList.add("selected");
+document.querySelectorAll(".option")[{"A":0,"B":1,"C":2,"D":3}[a[i]]]
+.classList.add("selected");
 }
 }
 
@@ -241,19 +277,17 @@ for(let k=0;k<q.length;k++){
 if(a[k]==q[k].correct)c++;
 }
 
-let users=JSON.parse(localStorage.getItem("users")||"{}");
-users[name.value]=true;
-localStorage.setItem("users",JSON.stringify(users));
-
 document.getElementById("examBox").style.display="none";
 document.getElementById("resultBox").style.display="block";
 
-/* فقط پیام */
+/* بدون نمره (طبق خواسته تو) */
 resultBox.innerHTML=`
 <h2>آزمون ثبت شد</h2>
-<p>نام: ${name.value}</p>
-<p>نتیجه در سیستم ذخیره شد.</p>
-<p>از شرکت مجدد جلوگیری شد.</p>
+<p>نام: ${document.getElementById("name").value}</p>
+<p>پاسخ‌ها ذخیره شد.</p>
+<p>برای چاپ از دکمه Print استفاده کنید.</p>
+
+<button onclick="window.print()">چاپ PDF</button>
 `;
 
 }
@@ -261,4 +295,4 @@ resultBox.innerHTML=`
 </script>
 
 </body>
-</html>
+  </html>
