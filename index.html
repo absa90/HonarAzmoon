@@ -1,14 +1,107 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>هنرآزمون</title>
+
+  <style>
+    body {
+      font-family: Tahoma;
+      background: #f2f6ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1e3a8a;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 15px;
+      background: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #15803d;
+    }
+
+    .option {
+      display: block;
+      margin: 8px 0;
+      padding: 8px;
+      background: #f1f5f9;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .option:hover {
+      background: #e2e8f0;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2>هنرآزمون</h2>
+  <p>سامانه آزمون‌سازی مهارتی</p>
+</header>
+
+<div class="container">
+
+  <div class="box">
+    <h3>انتخاب فایل آزمون</h3>
+    <input type="file" id="fileInput" accept=".xlsx">
+    <br><br>
+    <button onclick="loadFile()">شروع آزمون</button>
+  </div>
+
+  <div class="box" id="examBox" style="display:none;">
+    <h3 id="qTitle">سوال</h3>
+
+    <div id="question"></div>
+
+    <br>
+
+    <button onclick="prevQuestion()">قبلی</button>
+    <button onclick="nextQuestion()">بعدی</button>
+  </div>
+
+</div>
+
+<!-- کتابخانه Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 <script>
   let questions = [];
   let current = 0;
+  let answers = [];
 
   function loadFile() {
     const input = document.getElementById('fileInput');
     const file = input.files[0];
 
     if (!file) {
-      alert("لطفاً یک فایل Excel انتخاب کنید");
+      alert("لطفاً فایل Excel را انتخاب کنید");
       return;
     }
 
@@ -32,7 +125,6 @@
   function parseQuestions(data) {
     questions = [];
 
-    // از ردیف 1 شروع می‌کنیم (ردیف 0 هدر است)
     for (let i = 1; i < data.length; i++) {
       let row = data[i];
 
@@ -51,34 +143,52 @@
     }
 
     if (questions.length === 0) {
-      alert("هیچ سوالی پیدا نشد");
+      alert("سوالی پیدا نشد");
       return;
     }
 
-    document.getElementById("examBox").style.display = "block";
     current = 0;
+    answers = [];
+
+    document.getElementById("examBox").style.display = "block";
     showQuestion();
   }
 
   function showQuestion() {
-    const q = questions[current];
+    let q = questions[current];
 
-    document.getElementById("question").innerHTML =
-      "سوال " + (current + 1) + "<br><br>" +
-      q.q + "<br><br>" +
-      "A) " + q.A + "<br>" +
-      "B) " + q.B + "<br>" +
-      "C) " + q.C + "<br>" +
-      "D) " + q.D;
+    document.getElementById("qTitle").innerText =
+      "سوال " + (current + 1) + " از " + questions.length;
+
+    document.getElementById("question").innerHTML = `
+      <p><b>${q.q}</b></p>
+      <div class="option" onclick="selectAnswer('A')">A) ${q.A}</div>
+      <div class="option" onclick="selectAnswer('B')">B) ${q.B}</div>
+      <div class="option" onclick="selectAnswer('C')">C) ${q.C}</div>
+      <div class="option" onclick="selectAnswer('D')">D) ${q.D}</div>
+    `;
+  }
+
+  function selectAnswer(ans) {
+    answers[current] = ans;
   }
 
   function nextQuestion() {
-    current++;
-
-    if (current < questions.length) {
+    if (current < questions.length - 1) {
+      current++;
       showQuestion();
     } else {
-      alert("آزمون تمام شد");
+      alert("آزمون تمام شد (نسخه اولیه)");
     }
   }
-</script>  
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      showQuestion();
+    }
+  }
+</script>
+
+</body>
+</html>
