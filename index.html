@@ -5,57 +5,41 @@
 <title>هنرآزمون</title>
 
 <style>
-body {font-family:Tahoma;background:#f2f6ff;margin:0;padding:0;}
-header {background:#1e3a8a;color:white;padding:12px;text-align:center;}
-.container{padding:20px;}
-.box{background:white;padding:20px;border-radius:10px;margin-top:15px;}
+body{font-family:tahoma;background:#f2f6ff;margin:0;padding:0}
+header{background:#1e3a8a;color:white;padding:12px;text-align:center}
+.container{padding:20px}
+.box{background:white;padding:20px;border-radius:10px;margin-top:15px}
 
 button{
-  padding:10px 15px;
-  background:#16a34a;
-  color:white;
-  border:none;
-  border-radius:5px;
-  margin:5px;
+padding:10px 15px;
+background:#16a34a;
+color:white;
+border:none;
+border-radius:5px;
+margin:5px;
+cursor:pointer;
 }
 
-/* تایمر */
-#timer{
-  font-size:18px;
-  font-weight:bold;
-  color:#b91c1c;
-  margin-bottom:10px;
-}
-
-/* گزینه‌ها */
 .option{
-  display:flex;
-  align-items:center;
-  padding:12px;
-  margin:10px 0;
-  background:#f1f5f9;
-  border-radius:10px;
-  cursor:pointer;
+padding:12px;
+margin:10px 0;
+background:#f1f5f9;
+border-radius:10px;
+cursor:pointer;
+transition:0.2s;
 }
+
+.option:hover{background:#e2e8f0}
 .option.selected{
-  background:#bfdbfe;
-  border:2px solid #2563eb;
+background:#bfdbfe;
+border:2px solid #2563eb;
 }
 
-.radio{
-  width:18px;height:18px;
-  border:2px solid #333;
-  border-radius:50%;
-  margin-left:10px;
-}
-
-.radio.checked::after{
-  content:"";
-  width:10px;height:10px;
-  background:#2563eb;
-  border-radius:50%;
-  display:block;
-  margin:2px;
+#timer{
+font-size:18px;
+font-weight:bold;
+color:#b91c1c;
+margin-bottom:10px;
 }
 </style>
 </head>
@@ -72,23 +56,23 @@ button{
 <div class="box">
 <h3>انتخاب فایل آزمون</h3>
 <input type="file" id="fileInput" accept=".xlsx">
-<button onclick="loadFile()">شروع آزمون</button>
+<button onclick="load()">شروع آزمون</button>
 </div>
 
-<div class="box" id="examBox" style="display:none;">
+<div class="box" id="exam" style="display:none">
 
-<div id="timer">زمان: --</div>
+<div id="timer">--</div>
 
-<h3 id="qTitle"></h3>
-<div id="question"></div>
+<h3 id="qtitle"></h3>
+<div id="qbox"></div>
 
 <button onclick="prev()">قبلی</button>
 <button onclick="next()">بعدی</button>
-<button onclick="finish()">پایان آزمون</button>
+<button onclick="finish()">پایان</button>
 
 </div>
 
-<div class="box" id="resultBox" style="display:none;"></div>
+<div class="box" id="result" style="display:none"></div>
 
 </div>
 
@@ -96,140 +80,139 @@ button{
 
 <script>
 
-let questions=[];
-let answers=[];
-let current=0;
+let q=[];
+let a=[];
+let i=0;
+let time=0;
+let timer;
 
-/* تایمر کل آزمون (مثلاً 30 دقیقه) */
-let totalTime = 30 * 60;
-let timerInterval;
+function load(){
+let f=document.getElementById("fileInput").files[0];
+if(!f){alert("فایل نیست");return}
 
-function startTimer(){
-timerInterval = setInterval(()=>{
-  let m = Math.floor(totalTime/60);
-  let s = totalTime%60;
+let r=new FileReader();
 
-  document.getElementById("timer").innerText =
-  `زمان باقی‌مانده: ${m}:${s<10?"0":""}${s}`;
-
-  totalTime--;
-
-  if(totalTime < 0){
-    clearInterval(timerInterval);
-    finish();
-  }
-},1000);
-}
-
-function loadFile(){
-let file=document.getElementById("fileInput").files[0];
-if(!file){alert("فایل انتخاب نشده");return;}
-
-let reader=new FileReader();
-
-reader.onload=function(e){
+r.onload=function(e){
 let data=new Uint8Array(e.target.result);
 let wb=XLSX.read(data,{type:"array"});
-let sheet=wb.Sheets[wb.SheetNames[0]];
-let json=XLSX.utils.sheet_to_json(sheet,{header:1});
-parse(json);
-};
+let sh=wb.Sheets[wb.SheetNames[0]];
+let j=XLSX.utils.sheet_to_json(sh,{header:1});
 
-reader.readAsArrayBuffer(file);
+parse(j);
 }
 
-function parse(data){
-questions=[];
+r.readAsArrayBuffer(f);
+}
 
-data.forEach(r=>{
-if(!r || !r[0] || r.length<8) return;
+function parse(d){
 
-questions.push({
-q:r[2],
+q=[];
+let examTime=30;
+
+d.forEach(r=>{
+if(!r||!r[0]||r.length<8)return;
+
+if(r[2]==="") return;
+
+q.push({
+question:r[2],
 A:r[3],
 B:r[4],
 C:r[5],
 D:r[6],
 correct:r[7]
 });
+
+if(r[8]) examTime=r[8];
 });
 
-answers=[];
-current=0;
+time=examTime*60;
 
-document.getElementById("examBox").style.display="block";
 startTimer();
+
+i=0;
+a=[];
+
+document.getElementById("exam").style.display="block";
 show();
 }
 
+function startTimer(){
+timer=setInterval(()=>{
+let m=Math.floor(time/60);
+let s=time%60;
+
+document.getElementById("timer")
+.innerText=`زمان: ${m}:${s<10?"0":""}${s}`;
+
+time--;
+
+if(time<0){
+clearInterval(timer);
+finish();
+}
+},1000);
+}
+
 function show(){
-let q=questions[current];
 
-document.getElementById("qTitle").innerText=
-`سوال ${current+1} از ${questions.length}`;
+let x=q[i];
 
-document.getElementById("question").innerHTML=`
-<p><b>${q.q}</b></p>
+document.getElementById("qtitle")
+.innerText=`سوال ${i+1} از ${q.length}`;
 
-<div class="option" onclick="select('A')" id="A">${q.A}</div>
-<div class="option" onclick="select('B')" id="B">${q.B}</div>
-<div class="option" onclick="select('C')" id="C">${q.C}</div>
-<div class="option" onclick="select('D')" id="D">${q.D}</div>
+document.getElementById("qbox").innerHTML=`
+<p><b>${x.question}</b></p>
+
+<div class="option" onclick="sel('A')">${x.A}</div>
+<div class="option" onclick="sel('B')">${x.B}</div>
+<div class="option" onclick="sel('C')">${x.C}</div>
+<div class="option" onclick="sel('D')">${x.D}</div>
 `;
 
 update();
 }
 
-function select(a){
-answers[current]=a;
+function sel(v){
+a[i]=v;
 update();
 }
 
 function update(){
-["A","B","C","D"].forEach(x=>{
-document.getElementById(x)?.classList.remove("selected");
+document.querySelectorAll(".option").forEach(e=>{
+e.classList.remove("selected");
 });
 
-if(answers[current]){
-document.getElementById(answers[current]).classList.add("selected");
+if(a[i]){
+document.querySelectorAll(".option")[{"A":0,"B":1,"C":2,"D":3}[a[i]]]
+.classList.add("selected");
 }
 }
 
-function next(){
-if(current<questions.length-1){
-current++;
-show();
-}
-}
-
-function prev(){
-if(current>0){
-current--;
-show();
-}
-}
+function next(){if(i<q.length-1){i++;show()}}
+function prev(){if(i>0){i--;show()}}
 
 function finish(){
 
-clearInterval(timerInterval);
+clearInterval(timer);
 
-let correct=0;
+let c=0;
 
-for(let i=0;i<questions.length;i++){
-if(answers[i]==questions[i].correct) correct++;
+for(let k=0;k<q.length;k++){
+if(a[k]==q[k].correct)c++;
 }
 
-let score100=(correct/questions.length)*100;
-let score20=(correct/questions.length)*20;
+let p100=(c/q.length)*100;
+let p20=(c/q.length)*20;
 
-document.getElementById("examBox").style.display="none";
-document.getElementById("resultBox").style.display="block";
+document.getElementById("exam").style.display="none";
+document.getElementById("result").style.display="block";
 
-document.getElementById("resultBox").innerHTML=`
-<h2>نتیجه آزمون</h2>
-<p>درست: ${correct}</p>
-<p>نمره از 100: ${score100.toFixed(1)}</p>
-<p>نمره از 20: ${score20.toFixed(1)}</p>
+document.getElementById("result").innerHTML=`
+<h2>نتیجه</h2>
+<p>درست: ${c}</p>
+<p>نمره 100: ${p100.toFixed(1)}</p>
+<p>نمره 20: ${p20.toFixed(1)}</p>
 `;
 }
 
