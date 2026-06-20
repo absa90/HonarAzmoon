@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه هنرآزمون v2.2 - هنرستان تلاش</title>
+    <title>سامانه هنرآزمون v2.3 - هنرستان تلاش</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -21,18 +21,17 @@
         * { box-sizing: border-box; font-family: Tahoma, Geneva, sans-serif; }
         body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        /* استایل صفحه معرفی ابتدایی (Splash Screen) */
+        /* استایل بهینه صفحه معرفی ابتدایی (Splash Screen) */
         #splashScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-            display: flex; justify-content: center; align-items: center; z-index: 9999; color: white; opacity: 1; transition: opacity 0.8s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 9999; color: white;
         }
-        .splash-content { text-align: center; max-width: 600px; padding: 20px; animation: scaleUp 0.5s ease-out; }
+        .splash-content { text-align: center; max-width: 600px; padding: 20px; }
         .splash-logo svg { width: 90px; fill: #f59e0b; margin-bottom: 20px; }
         .splash-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #f59e0b; }
         .splash-school { font-size: 16px; margin-bottom: 25px; color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; }
         .splash-readme { background: rgba(255,255,255,0.07); border-right: 4px solid #f59e0b; padding: 15px; border-radius: 8px; text-align: right; font-size: 13px; line-height: 1.8; color: #e2e8f0; }
-
-        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* استایل کانتینرهای اصلی */
         .box {
@@ -44,9 +43,7 @@
             max-width: 800px;
             border-top: 8px solid var(--primary);
             margin-bottom: 15px;
-            animation: fadeIn 0.4s ease-in-out;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         h2, h3 { text-align: center; color: var(--primary); margin-top: 0; }
         .subtitle { text-align: center; color: var(--accent); font-size: 14px; margin-top: -10px; margin-bottom: 25px; }
@@ -114,7 +111,7 @@
                 • تولید آنی کارنامه استاندارد طبق ابعاد دقیق کاغذ A5 افقی متمایز برای چاپ سیاه و سفید کارگاه.<br>
                 • امکان استخراج و دانلود دفترچه رسمی سوالات در قالب برگه A4 عمودی جهت بایگانی آموزشگاه.
             </div>
-            <div style="margin-top: 20px; font-size: 11px; color: #94a3b8;">لطفاً چند لحظه شکیبا باشید...</div>
+            <div style="margin-top: 20px; font-size: 11px; color: #cbd5e1;">لطفاً چند لحظه شکیبا باشید...</div>
         </div>
     </div>
 
@@ -170,19 +167,17 @@
 let q = [], a = [], i = 0, time = 0, timer;
 let info = {};
 
-// مدیریت نمایش اتوماتیک صفحه معرفی (Splash Screen) به مدت ۵ ثانیه
-window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        let splash = document.getElementById("splashScreen");
-        if(splash) {
-            splash.style.opacity = "0";
-            setTimeout(() => { splash.style.display = "none"; }, 800);
-        }
-    }, 5000); // ۵۰۰۰ میلی‌ثانیه معادل ۵ ثانیه
-});
+// بستن قطعی اسپلش اسکرین پس از ۵ ثانیه بدون وابستگی به لود مرورگر
+setTimeout(function() {
+    let splash = document.getElementById("splashScreen");
+    if(splash) {
+        splash.style.display = "none";
+    }
+}, 5000);
 
 function startExam(){
-    if(!document.getElementById("name").value.trim()){
+    let nameVal = document.getElementById("name").value.trim();
+    if(!nameVal){
         alert("وارد کردن نام و نام خانوادگی الزامی است.");
         return;
     }
@@ -415,4 +410,24 @@ function finish(auto = false){
                     <span class="info-label">کد ملی:</span><span class="info-value">${nationalId}</span>
                     <span class="info-label">پایه/کلاس:</span><span class="info-value">${info.grade}</span>
                     <span class="info-label">صحیح / غلط:</span><span class="info-value">${correctCount} / ${wrongCount}</span>
-                    <span class="info-label">نمره از ۱۰۰:</span><span
+                    <span class="info-label">نمره از ۱۰۰:</span><span class="info-value score-highlight">${score100}</span>
+                    <span class="info-label">نمره از ۲۰:</span><span class="info-value score-highlight">${score20}</span>
+                    <span class="info-label">نتیجه نهایی:</span><span class="info-value" style="text-align:center;">${passStatus}</span>
+                </div>
+                <div class="signature-space">امضای هنرآموز</div>
+            </div>
+        </div>
+    </body>
+    </html>`;
+
+    window.compiledResultHTML = resHTML;
+
+    let questionsHtml = "";
+    for(let k = 0; k < q.length; k++) {
+        questionsHtml += `
+        <div class="question-block">
+            <div class="question-text"><b>سوال ${k+1}:</b> ${q[k].q}</div>
+            <div class="options-container">
+                <div class="option-item">الف) ${q[k].A}</div>
+                <div class="option-item">ب) ${q[k].B}</div>
+    
