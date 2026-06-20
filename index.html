@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>هنرآزمون v2.1 - هنرستان تلاش</title>
+    <title>سامانه هنرآزمون v2.2 - هنرستان تلاش</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -19,8 +19,22 @@
         }
 
         * { box-sizing: border-box; font-family: Tahoma, Geneva, sans-serif; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
+        /* استایل صفحه معرفی ابتدایی (Splash Screen) */
+        #splashScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 9999; color: white; opacity: 1; transition: opacity 0.8s ease;
+        }
+        .splash-content { text-align: center; max-width: 600px; padding: 20px; animation: scaleUp 0.5s ease-out; }
+        .splash-logo svg { width: 90px; fill: #f59e0b; margin-bottom: 20px; }
+        .splash-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #f59e0b; }
+        .splash-school { font-size: 16px; margin-bottom: 25px; color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; }
+        .splash-readme { background: rgba(255,255,255,0.07); border-right: 4px solid #f59e0b; padding: 15px; border-radius: 8px; text-align: right; font-size: 13px; line-height: 1.8; color: #e2e8f0; }
+
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* استایل کانتینرهای اصلی */
         .box {
             background: var(--card-bg);
             padding: 30px;
@@ -30,7 +44,9 @@
             max-width: 800px;
             border-top: 8px solid var(--primary);
             margin-bottom: 15px;
+            animation: fadeIn 0.4s ease-in-out;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         h2, h3 { text-align: center; color: var(--primary); margin-top: 0; }
         .subtitle { text-align: center; color: var(--accent); font-size: 14px; margin-top: -10px; margin-bottom: 25px; }
@@ -84,7 +100,25 @@
 </head>
 <body>
 
-    <div class="box" id="formBox">
+    <div id="splashScreen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <svg viewBox="0 0 24 24"><path d="M12 24c6.627 0 12-5.373 12-12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12zm1-21.84c3.82.47 6.87 3.52 7.34 7.34H17.22c-.42-1.93-1.95-3.46-3.88-3.88V2.16zM11 2.16v4.1c-1.93.42-3.46 1.95-3.88 3.88H4.16c.47-3.82 3.52-6.87 7.34-7.34zM4.16 13h2.96c.42 1.93 1.95 3.46 3.88 3.88v4.1c-3.82-.47-6.87-3.52-7.34-7.34zm13.06 0h2.96c-.47 3.82-3.52 6.87-7.34 7.34v-4.1c1.93-.42 3.46-1.95 3.88-3.88z"/></svg>
+            </div>
+            <div class="splash-title">پروژه نرم‌افزاری هنرآزمون تلاش</div>
+            <div class="splash-school">هنرستان کاردانش تلاش مبارکه - تأسیس ۱۳۸۲</div>
+            <div class="splash-readme">
+                <strong>🎯 اهداف و راهنمای پروژه (ReadMe):</strong><br>
+                • برگزاری آزمون‌های کتبی مهارتی به صورت ۱۰۰٪ آفلاین و بدون نیاز به اینترنت.<br>
+                • بارگذاری پویای سوالات از طریق فایل بانک اطلاعاتی اکسل (Excel).<br>
+                • تولید آنی کارنامه استاندارد طبق ابعاد دقیق کاغذ A5 افقی متمایز برای چاپ سیاه و سفید کارگاه.<br>
+                • امکان استخراج و دانلود دفترچه رسمی سوالات در قالب برگه A4 عمودی جهت بایگانی آموزشگاه.
+            </div>
+            <div style="margin-top: 20px; font-size: 11px; color: #94a3b8;">لطفاً چند لحظه شکیبا باشید...</div>
+        </div>
+    </div>
+
+    <div class="box" id="formBox" style="display:block;">
         <div class="logo-container">
             <svg viewBox="0 0 24 24"><path d="M12 24c6.627 0 12-5.373 12-12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12zm1-21.84c3.82.47 6.87 3.52 7.34 7.34H17.22c-.42-1.93-1.95-3.46-3.88-3.88V2.16zM11 2.16v4.1c-1.93.42-3.46 1.95-3.88 3.88H4.16c.47-3.82 3.52-6.87 7.34-7.34zM4.16 13h2.96c.42 1.93 1.95 3.46 3.88 3.88v4.1c-3.82-.47-6.87-3.52-7.34-7.34zm13.06 0h2.96c-.47 3.82-3.52 6.87-7.34 7.34v-4.1c1.93-.42 3.46-1.95 3.88-3.88z"/></svg>
         </div>
@@ -135,6 +169,17 @@
 <script>
 let q = [], a = [], i = 0, time = 0, timer;
 let info = {};
+
+// مدیریت نمایش اتوماتیک صفحه معرفی (Splash Screen) به مدت ۵ ثانیه
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        let splash = document.getElementById("splashScreen");
+        if(splash) {
+            splash.style.opacity = "0";
+            setTimeout(() => { splash.style.display = "none"; }, 800);
+        }
+    }, 5000); // ۵۰۰۰ میلی‌ثانیه معادل ۵ ثانیه
+});
 
 function startExam(){
     if(!document.getElementById("name").value.trim()){
@@ -287,7 +332,6 @@ function finish(auto = false){
                 if(isCorrect) {
                     if(userAns=='A') cA='✔'; if(userAns=='B') cB='✔'; if(userAns=='C') cC='✔'; if(userAns=='D') cD='✔';
                     statusSign = '✔ صحیح';
-                    statusClass = 'green-tick';
                 } else {
                     if(userAns=='A') cA='✖'; if(userAns=='B') cB='✖'; if(userAns=='C') cC='✖'; if(userAns=='D') cD='✖';
                     if(correctAns=='A') cA='◯';
@@ -295,7 +339,6 @@ function finish(auto = false){
                     if(correctAns=='C') cC='◯';
                     if(correctAns=='D') cD='◯';
                     statusSign = '✖ غلط';
-                    statusClass = 'red-x';
                 }
             } else {
                 if(correctAns=='A') cA='◯';
@@ -303,13 +346,12 @@ function finish(auto = false){
                 if(correctAns=='C') cC='◯';
                 if(correctAns=='D') cD='◯';
                 statusSign = '✖ نزده';
-                statusClass = 'red-x';
             }
 
             rowHtml = `<tr>
                 <td class="q-num">${k+1}</td>
                 <td>${cA}</td><td>${cB}</td><td>${cC}</td><td>${cD}</td>
-                <td class="${statusClass}" style="font-size:8px;">${statusSign}</td>
+                <td style="font-size:8px; font-weight:bold;">${statusSign}</td>
             </tr>`;
         } else {
             rowHtml = `<tr><td class="q-num">${k+1}</td><td></td><td></td><td></td><td></td><td></td></tr>`;
@@ -330,3 +372,47 @@ function finish(auto = false){
         <meta charset="UTF-8">
         <title>کارنامه آزمون - ${studentName}</title>
         <style>
+            @page { size: A5 landscape; margin: 4mm; }
+            body { font-family: 'Tahoma', sans-serif; font-size: 10px; margin: 0; padding: 2mm; background-color: #fff; color: #000; }
+            .header { text-align: center; margin-bottom: 6px; border-bottom: 2px solid #000; padding-bottom: 4px; }
+            .header h1 { font-size: 12px; margin: 0 0 2px 0; }
+            .header h2 { font-size: 10px; margin: 0; font-weight: normal; }
+            .main-container { display: flex; justify-content: space-between; height: 112mm; }
+            .table-column { width: 39%; }
+            .info-column { width: 20%; border-right: 2px solid #000; padding-right: 8px; display: flex; flex-direction: column; justify-content: space-between; }
+            table { width: 100%; border-collapse: collapse; text-align: center; }
+            th, td { border: 1px solid #000; padding: 2px 1px; font-size: 9.5px; height: 4mm; }
+            th { background-color: #e6e6e6; font-weight: bold; }
+            .q-num { font-weight: bold; background-color: #f0f0f0; width: 18px; }
+            .info-label { font-weight: bold; display: block; margin-bottom: 1px; }
+            .info-value { background-color: #f5f5f5; padding: 2px 4px; display: block; margin-bottom: 4px; border-bottom: 1px dashed #000; font-weight: bold; }
+            .score-highlight { font-weight: bold; border: 1px solid #000; background-color: #fafafa; }
+            .signature-space { margin-top: auto; border-top: 1px solid #000; padding-top: 15px; text-align: center; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>کارنامه آزمون مهارت: ${info.exam}</h1>
+            <h2>اداره کل آموزش و پرورش استان اصفهان | هنرستان کاردانش تلاش مبارکه [تاسیس ۱۳۸۲]</h2>
+        </div>
+        <div class="main-container">
+            <div class="table-column">
+                <table>
+                    <thead><tr><th class="q-num">ش</th><th>الف</th><th>ب</th><th>ج</th><th>د</th><th>وضعیت</th></tr></thead>
+                    <tbody>${leftTableRows}</tbody>
+                </table>
+            </div>
+            <div class="table-column">
+                <table>
+                    <thead><tr><th class="q-num">ش</th><th>الف</th><th>ب</th><th>ج</th><th>د</th><th>وضعیت</th></tr></thead>
+                    <tbody>${rightTableRows}</tbody>
+                </table>
+            </div>
+            <div class="info-column">
+                <div>
+                    <span class="info-label">هنرجو:</span><span class="info-value">${studentName}</span>
+                    <span class="info-label">نام پدر:</span><span class="info-value">${fatherName}</span>
+                    <span class="info-label">کد ملی:</span><span class="info-value">${nationalId}</span>
+                    <span class="info-label">پایه/کلاس:</span><span class="info-value">${info.grade}</span>
+                    <span class="info-label">صحیح / غلط:</span><span class="info-value">${correctCount} / ${wrongCount}</span>
+                    <span class="info-label">نمره از ۱۰۰:</span><span
