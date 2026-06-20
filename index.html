@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه هنرآزمون v2.3 - هنرستان تلاش</title>
+    <title>سامانه هنرآزمون v2.4 (نسخه پایدار) - هنرستان تلاش</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -19,21 +19,8 @@
         }
 
         * { box-sizing: border-box; font-family: Tahoma, Geneva, sans-serif; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        /* استایل بهینه صفحه معرفی ابتدایی (Splash Screen) */
-        #splashScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-            display: flex; justify-content: center; align-items: center; z-index: 9999; color: white;
-        }
-        .splash-content { text-align: center; max-width: 600px; padding: 20px; }
-        .splash-logo svg { width: 90px; fill: #f59e0b; margin-bottom: 20px; }
-        .splash-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #f59e0b; }
-        .splash-school { font-size: 16px; margin-bottom: 25px; color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; }
-        .splash-readme { background: rgba(255,255,255,0.07); border-right: 4px solid #f59e0b; padding: 15px; border-radius: 8px; text-align: right; font-size: 13px; line-height: 1.8; color: #e2e8f0; }
-
-        /* استایل کانتینرهای اصلی */
         .box {
             background: var(--card-bg);
             padding: 30px;
@@ -97,25 +84,7 @@
 </head>
 <body>
 
-    <div id="splashScreen">
-        <div class="splash-content">
-            <div class="splash-logo">
-                <svg viewBox="0 0 24 24"><path d="M12 24c6.627 0 12-5.373 12-12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12zm1-21.84c3.82.47 6.87 3.52 7.34 7.34H17.22c-.42-1.93-1.95-3.46-3.88-3.88V2.16zM11 2.16v4.1c-1.93.42-3.46 1.95-3.88 3.88H4.16c.47-3.82 3.52-6.87 7.34-7.34zM4.16 13h2.96c.42 1.93 1.95 3.46 3.88 3.88v4.1c-3.82-.47-6.87-3.52-7.34-7.34zm13.06 0h2.96c-.47 3.82-3.52 6.87-7.34 7.34v-4.1c1.93-.42 3.46-1.95 3.88-3.88z"/></svg>
-            </div>
-            <div class="splash-title">پروژه نرم‌افزاری هنرآزمون تلاش</div>
-            <div class="splash-school">هنرستان کاردانش تلاش مبارکه - تأسیس ۱۳۸۲</div>
-            <div class="splash-readme">
-                <strong>🎯 اهداف و راهنمای پروژه (ReadMe):</strong><br>
-                • برگزاری آزمون‌های کتبی مهارتی به صورت ۱۰۰٪ آفلاین و بدون نیاز به اینترنت.<br>
-                • بارگذاری پویای سوالات از طریق فایل بانک اطلاعاتی اکسل (Excel).<br>
-                • تولید آنی کارنامه استاندارد طبق ابعاد دقیق کاغذ A5 افقی متمایز برای چاپ سیاه و سفید کارگاه.<br>
-                • امکان استخراج و دانلود دفترچه رسمی سوالات در قالب برگه A4 عمودی جهت بایگانی آموزشگاه.
-            </div>
-            <div style="margin-top: 20px; font-size: 11px; color: #cbd5e1;">لطفاً چند لحظه شکیبا باشید...</div>
-        </div>
-    </div>
-
-    <div class="box" id="formBox" style="display:block;">
+    <div class="box" id="formBox">
         <div class="logo-container">
             <svg viewBox="0 0 24 24"><path d="M12 24c6.627 0 12-5.373 12-12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12zm1-21.84c3.82.47 6.87 3.52 7.34 7.34H17.22c-.42-1.93-1.95-3.46-3.88-3.88V2.16zM11 2.16v4.1c-1.93.42-3.46 1.95-3.88 3.88H4.16c.47-3.82 3.52-6.87 7.34-7.34zM4.16 13h2.96c.42 1.93 1.95 3.46 3.88 3.88v4.1c-3.82-.47-6.87-3.52-7.34-7.34zm13.06 0h2.96c-.47 3.82-3.52 6.87-7.34 7.34v-4.1c1.93-.42 3.46-1.95 3.88-3.88z"/></svg>
         </div>
@@ -166,14 +135,6 @@
 <script>
 let q = [], a = [], i = 0, time = 0, timer;
 let info = {};
-
-// بستن قطعی اسپلش اسکرین پس از ۵ ثانیه بدون وابستگی به لود مرورگر
-setTimeout(function() {
-    let splash = document.getElementById("splashScreen");
-    if(splash) {
-        splash.style.display = "none";
-    }
-}, 5000);
 
 function startExam(){
     let nameVal = document.getElementById("name").value.trim();
@@ -430,4 +391,107 @@ function finish(auto = false){
             <div class="options-container">
                 <div class="option-item">الف) ${q[k].A}</div>
                 <div class="option-item">ب) ${q[k].B}</div>
-    
+                <div class="option-item">ج) ${q[k].C}</div>
+                <div class="option-item">د) ${q[k].D}</div>
+            </div>
+        </div>`;
+    }
+
+    let examBookletHTML = `
+    <!DOCTYPE html>
+    <html lang="fa" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <title>دفترچه سوالات - ${info.exam}</title>
+        <style>
+            @page { size: A4 portrait; margin: 10mm; }
+            body { font-family: 'Tahoma', sans-serif; font-size: 11px; margin: 0; padding: 0; color: #000; line-height: 1.6; }
+            .exam-header { border: 2px solid #000; padding: 10px; margin-bottom: 20px; }
+            .header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #000; padding-bottom: 8px; }
+            .header-title { text-align: center; flex: 1; }
+            .header-title h1 { font-size: 14px; margin: 0 0 5px 0; }
+            .header-title h2 { font-size: 11px; margin: 0; font-weight: normal; }
+            .header-meta { font-size: 10px; text-align: right; line-height: 1.5; }
+            .header-bottom { display: flex; justify-content: space-between; padding-top: 8px; font-weight: bold; font-size: 11px; }
+            .question-block { border-bottom: 1px dashed #ccc; padding: 12px 0; page-break-inside: avoid; }
+            .question-text { font-size: 12px; margin-bottom: 8px; text-align: justify; }
+            .options-container { display: flex; flex-wrap: wrap; gap: 10px; }
+            .option-item { width: 48%; min-width: 200px; font-size: 11.5px; padding-right: 15px; }
+            .footer-exam { margin-top: 30px; border-top: 2px solid #000; padding-top: 15px; display: flex; justify-content: space-between; font-weight: bold; page-break-inside: avoid; }
+        </style>
+    </head>
+    <body>
+        <div class="exam-header">
+            <div class="header-top">
+                <div class="header-meta">
+                    <div>وزارت آموزش و پرورش</div>
+                    <div>اداره کل آموزش و پرورش استان اصفهان</div>
+                    <div>مدیریت آموزش و پرورش شهرستان مبارکه</div>
+                </div>
+                <div class="header-title">
+                    <h1>دفترچه رسمی سوالات آزمون کتبی مهارتی</h1>
+                    <h2>${info.field} - پایه / کلاس: ${info.grade}</h2>
+                </div>
+                <div class="header-meta" style="text-align: left;">
+                    <div>نام آزمون: ${info.exam}</div>
+                    <div>تاریخ آزمون: ${info.date}</div>
+                    <div>مدت آزمون: ${info.time} دقیقه</div>
+                </div>
+            </div>
+            <div class="header-bottom">
+                <div>نام و نام خانوادگی هنرجو: ${studentName}</div>
+                <div>نام پدر: ${fatherName}</div>
+                <div>کد ملی: ${nationalId}</div>
+                <div>محل برگزاری: هنرستان کاردانش تلاش</div>
+            </div>
+        </div>
+        <div class="questions-list">${questionsHtml}</div>
+        <div class="footer-exam">
+            <div>طراح آزمون: مهندس صالحی</div>
+            <div>محل امضا و تایید هنرآموز</div>
+            <div>نمره نهایی بارم (۲۰): ........................</div>
+        </div>
+    </body>
+    </html>`;
+
+    window.compiledQuestionsHTML = examBookletHTML;
+
+    let uniqueTime = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+    triggerDownload(window.compiledResultHTML, "Karnameh_" + studentName.replace(/\s+/g, '_') + "_" + uniqueTime + ".html");
+
+    document.getElementById("examBox").style.display = "none";
+    let resBox = document.getElementById("resultBox");
+    resBox.style.display = "block";
+    resBox.innerHTML = `
+        <h2 style="color:var(--success); margin-bottom:10px;">آزمون با موفقیت ثبت شد</h2>
+        <p>هنرجوی گرامی <b>${studentName}</b>، آزمون شما به پایان رسید و کارنامه صادر گردید.</p>
+        <p style="font-size:13px; color:#64748b; margin-bottom:25px;">اکنون می‌توانید نسخه چاپی کارنامه یا دفترچه سوالات امتحانی را دریافت نمایید.</p>
+        
+        <div class="btn-group" style="justify-content: center; max-width: 500px; margin: 0 auto;">
+            <button class="btn-success" onclick="downloadResultFile('${studentName}')">📥 دانلود مجدد کارنامه (A5)</button>
+            <button class="btn-warning" onclick="downloadQuestionsFile('${studentName}')">📄 دانلود دفترچه سوالات (A4)</button>
+        </div>
+        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;">
+        <button class="btn-secondary" style="width:auto; padding: 10px 20px;" onclick="location.reload()">🔄 آماده‌سازی سیستم برای نفر بعدی</button>
+    `;
+}
+
+function triggerDownload(content, filename) {
+    let blob = new Blob([content], {type:'text/html;charset=utf-8'});
+    let aLink = document.createElement("a");
+    aLink.href = URL.createObjectURL(blob);
+    aLink.download = filename;
+    aLink.click();
+}
+
+function downloadResultFile(name) {
+    let uniqueTime = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+    triggerDownload(window.compiledResultHTML, "Karnameh_" + name.replace(/\s+/g, '_') + "_" + uniqueTime + ".html");
+}
+
+function downloadQuestionsFile(name) {
+    triggerDownload(window.compiledQuestionsHTML, "Exam_Booklet_" + info.exam.replace(/\s+/g, '_') + ".html");
+}
+</script>
+</body>
+</html>
